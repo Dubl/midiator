@@ -26,19 +26,21 @@ class MIDIator::Interface
 
   ### Automatically select a driver to use
   def autodetect_driver
-    driver = case RUBY_PLATFORM
-    when /darwin/
-      :dls_synth
-    when /cygwin/, /mingw/
+    driver = case Platform::IMPL
+    when :macosx
+      :core_midi
+    when :mswin, :cygwin
       :winmm
-    when /linux/
+    when :linux
       :alsa
-    when /java/
-      :mmj if Java::java.lang.System.get_property('os.name') == 'Mac OS X'
     else
-      raise "No driver is available."
+      if defined?( Java ) && Java::java.lang.System.get_property('os.name') == 'Mac OS X'
+        :mmj
+      else
+        raise "No driver is available."
+      end
     end
-
+    
     self.use(driver)
   end
 
